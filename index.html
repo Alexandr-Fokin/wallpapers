@@ -325,6 +325,8 @@
             let uploadedBackgroundUrl = null;
             let isBackgroundImageUploaded = false;
             let currentPatternSize = 200; // Начальный размер
+            let customWidthValue = 200;
+            let customHeightValue = 200;
             let aspectRatio = 1;
         
             uploadButton.addEventListener('change', (event) => {
@@ -354,6 +356,7 @@
         
                 if (selectedValue === 'custom') {
                     customSizeInputs.style.display = 'block';
+                    updateCustomSizeInputs();
                 } else {
                     customSizeInputs.style.display = 'none';
                     currentPatternSize = selectedValue;
@@ -372,28 +375,47 @@
         
                 if (keepAspectRatio.checked) {
                     aspectRatio = width / height;
+                    customWidthValue = width;
+                    customHeightValue = height;
+                } else {
+                    customWidthValue = width;
+                    customHeightValue = height;
                 }
         
-                backgroundContainer.style.backgroundSize = `${width}px ${height}px`;
+                backgroundContainer.style.backgroundSize = `${customWidthValue}px ${customHeightValue}px`;
+            });
+        
+            keepAspectRatio.addEventListener('change', () => {
+                if (keepAspectRatio.checked) {
+                    const width = parseInt(customWidth.value);
+                    const height = parseInt(customHeight.value);
+        
+                    if (!isNaN(width) && !isNaN(height) && width > 0 && height > 0) {
+                        aspectRatio = width / height;
+                    }
+                }
             });
         
             customWidth.addEventListener('input', () => {
                 if (keepAspectRatio.checked) {
-                    const width = parseInt(customWidth.value);
-                    if (!isNaN(width)) {
-                        customHeight.value = Math.round(width / aspectRatio);
-                    }
+                    customHeight.value = Math.round(customWidth.value / aspectRatio);
                 }
             });
         
             customHeight.addEventListener('input', () => {
                 if (keepAspectRatio.checked) {
-                    const height = parseInt(customHeight.value);
-                    if (!isNaN(height)) {
-                        customWidth.value = Math.round(height * aspectRatio);
-                    }
+                    customWidth.value = Math.round(customHeight.value * aspectRatio);
                 }
             });
+        
+            function updateCustomSizeInputs() {
+                if (keepAspectRatio.checked) {
+                    customHeight.value = Math.round(customWidth.value / aspectRatio);
+                } else {
+                    customWidth.value = customWidthValue;
+                    customHeight.value = customHeightValue;
+                }
+            }
         
             downloadButton.addEventListener('click', () => {
                 if (!isBackgroundImageUploaded) {
@@ -416,8 +438,8 @@
                     // Создание паттерна с заданным размером
                     const patternCanvas = document.createElement('canvas');
                     const patternContext = patternCanvas.getContext('2d');
-                    patternCanvas.width = customWidth.value;
-                    patternCanvas.height = customHeight.value;
+                    patternCanvas.width = patternSizeSelect.value === 'custom' ? customWidthValue : currentPatternSize;
+                    patternCanvas.height = patternSizeSelect.value === 'custom' ? customHeightValue : currentPatternSize;
         
                     // Нарисовать фон на паттерн холсте
                     patternContext.drawImage(tempBackground, 0, 0, patternCanvas.width, patternCanvas.height);
