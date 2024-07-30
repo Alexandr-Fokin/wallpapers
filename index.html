@@ -1,26 +1,104 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Загрузка изображения для фона</title>
     <style>
-        /* Стили остаются прежними, добавим только новые стили ниже */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            padding: 25px;
+        }
+
+        .image-container {
+            position: relative;
+            width: 90%;
+            max-width: 1700px;
+            min-height: 400px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: 200px 200px;
+            background-repeat: repeat;
+            z-index: 5;
+            border-radius: 12px;
+        }
+
+        #mainImage {
+            width: 100%;
+            height: auto;
+            z-index: 10;
+            position: relative;
+            border-radius: 12px;
+        }
+
+        .controls {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 800px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .controls label {
+            margin: 15px 0;
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .controls select,
+        .controls input[type="file"],
         .controls input[type="number"] {
             padding: 10px;
             border-radius: 6px;
             border: 1px solid #ccc;
             width: 100%;
-            max-width: 150px;
+            max-width: 300px;
             font-size: 14px;
             background-color: #fafafa;
             color: #333;
             margin-top: 5px;
             text-align: left;
         }
-        
+
+        .controls select:focus,
+        .controls input[type="file"]:focus,
+        .controls input[type="number"]:focus {
+            border-color: #0078d4;
+        }
+
+        #downloadButton,
         #aspectRatioButton {
-            margin-top: 10px;
+            margin-top: 20px;
             padding: 10px 20px;
             background-color: #0078d4;
             border: none;
@@ -33,17 +111,17 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        #downloadButton:hover,
         #aspectRatioButton:hover {
             background-color: #005fa3;
             transform: translateY(-2px);
         }
 
+        #downloadButton:active,
         #aspectRatioButton:active {
             background-color: #004f85;
             transform: translateY(0);
         }
-
-
 
         body {
             font-family: 'Arial', sans-serif;
@@ -159,6 +237,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="image-container" id="canvasContainer">
         <div class="background" id="backgroundContainer"></div>
@@ -199,12 +278,18 @@
                 Высота:
                 <input type="number" id="customHeight" placeholder="Высота (px)">
             </label>
-            <button id="aspectRatioButton">Сохранить пропорции</button>
+            <label>
+                <input type="checkbox" id="keepAspectRatio">
+                Сохранить пропорции
+            </label>
+            <button id="aspectRatioButton">Применить</button>
         </div>
         <button id="downloadButton">Скачать изображение</button>
     </div>
 
-    <div class="" style="margin: 0 auto; text-align: center; margin-top: 15px; margin-bottom: 15px; font-size: 16px; font-weight: 600;">Все права на данный сайт принадлежат Фокину А. С.</div>
+    <div class=""
+        style="margin: 0 auto; text-align: center; margin-top: 15px; margin-bottom: 15px; font-size: 16px; font-weight: 600;">
+        Все права на данный сайт принадлежат Фокину А. С.</div>
 
     <script>
         const uploadButton = document.getElementById('uploadButton');
@@ -217,6 +302,7 @@
         const customWidth = document.getElementById('customWidth');
         const customHeight = document.getElementById('customHeight');
         const aspectRatioButton = document.getElementById('aspectRatioButton');
+        const keepAspectRatio = document.getElementById('keepAspectRatio');
 
         let uploadedBackgroundUrl = null;
         let isBackgroundImageUploaded = false;
@@ -224,6 +310,7 @@
         let isCustomSize = false;
         let customWidthValue = 200;
         let customHeightValue = 200;
+        let aspectRatio = 1;
 
         uploadButton.addEventListener('change', (event) => {
             const file = event.target.files[0];
@@ -270,11 +357,33 @@
                 return;
             }
 
-            customWidthValue = width;
-            customHeightValue = height;
-
-            // Установка пользовательского размера фона
+            if (keepAspectRatio.checked) {
+                if (customWidthValue === width) {
+                    customHeightValue = Math.round(width / aspectRatio);
+                } else if (customHeightValue === height) {
+                    customWidthValue = Math.round(height * aspectRatio);
+                } else {
+                    aspectRatio = width / height;
+                    customWidthValue = width;
+                    customHeightValue = height;
+                }
+            } else {
+                customWidthValue = width;
+                customHeightValue = height;
+            }
             backgroundContainer.style.backgroundSize = `${customWidthValue}px ${customHeightValue}px`;
+        });
+
+        customWidth.addEventListener('input', () => {
+            if (keepAspectRatio.checked) {
+                customHeight.value = Math.round(customWidth.value / aspectRatio);
+            }
+        });
+
+        customHeight.addEventListener('input', () => {
+            if (keepAspectRatio.checked) {
+                customWidth.value = Math.round(customHeight.value * aspectRatio);
+            }
         });
 
         downloadButton.addEventListener('click', () => {
@@ -334,5 +443,3 @@
             };
         });
     </script>
-</body>
-</html>
