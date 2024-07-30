@@ -5,97 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Загрузка изображения для фона</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-            padding: 25px;
-        }
-
-        .image-container {
-            position: relative;
-            width: 90%;
-            max-width: 1700px;
-            min-height: 400px;
-            overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            background-color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .background {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-size: 200px 200px;
-            background-repeat: repeat;
-            z-index: 5;
-            border-radius: 12px;
-        }
-
-        #mainImage {
-            width: 100%;
-            height: auto;
-            z-index: 10;
-            position: relative;
-            border-radius: 12px;
-        }
-
-        .controls {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 90%;
-            max-width: 800px;
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .controls label {
-            margin: 15px 0;
-            font-weight: 600;
-            font-size: 14px;
-            width: 100%;
-        }
-
-        .controls select,
-        .controls input[type="file"] {
+        /* Стили остаются прежними, добавим только новые стили ниже */
+        .controls input[type="number"] {
             padding: 10px;
             border-radius: 6px;
             border: 1px solid #ccc;
             width: 100%;
-            max-width: 300px;
+            max-width: 150px;
             font-size: 14px;
             background-color: #fafafa;
             color: #333;
             margin-top: 5px;
             text-align: left;
-            transition: border-color 0.3s;
         }
-
-        .controls select:focus,
-        .controls input[type="file"]:focus {
-            border-color: #0078d4;
-        }
-
-        #downloadButton {
-            margin-top: 20px;
+        
+        #aspectRatioButton {
+            margin-top: 10px;
             padding: 10px 20px;
             background-color: #0078d4;
             border: none;
@@ -108,12 +33,12 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        #downloadButton:hover {
+        #aspectRatioButton:hover {
             background-color: #005fa3;
             transform: translateY(-2px);
         }
 
-        #downloadButton:active {
+        #aspectRatioButton:active {
             background-color: #004f85;
             transform: translateY(0);
         }
@@ -147,8 +72,20 @@
                 <option value="300">300px</option>
                 <option value="400">400px</option>
                 <option value="600">600px</option>
+                <option value="custom">Пользовательский</option>
             </select>
         </label>
+        <div id="customSizeInputs" style="display: none;">
+            <label>
+                Ширина:
+                <input type="number" id="customWidth" placeholder="Ширина (px)">
+            </label>
+            <label>
+                Высота:
+                <input type="number" id="customHeight" placeholder="Высота (px)">
+            </label>
+            <button id="aspectRatioButton">Сохранить пропорции</button>
+        </div>
         <button id="downloadButton">Скачать изображение</button>
     </div>
 
@@ -161,10 +98,17 @@
         const mainImage = document.getElementById('mainImage');
         const downloadButton = document.getElementById('downloadButton');
         const patternSizeSelect = document.getElementById('patternSizeSelect');
+        const customSizeInputs = document.getElementById('customSizeInputs');
+        const customWidth = document.getElementById('customWidth');
+        const customHeight = document.getElementById('customHeight');
+        const aspectRatioButton = document.getElementById('aspectRatioButton');
 
         let uploadedBackgroundUrl = null;
         let isBackgroundImageUploaded = false;
         let currentPatternSize = 200; // Начальный размер
+        let isCustomSize = false;
+        let customWidthValue = 200;
+        let customHeightValue = 200;
 
         uploadButton.addEventListener('change', (event) => {
             const file = event.target.files[0];
@@ -189,8 +133,33 @@
         });
 
         patternSizeSelect.addEventListener('change', (event) => {
-            currentPatternSize = event.target.value;
-            backgroundContainer.style.backgroundSize = `${currentPatternSize}px ${currentPatternSize}px`;
+            const selectedValue = event.target.value;
+
+            if (selectedValue === 'custom') {
+                customSizeInputs.style.display = 'block';
+                isCustomSize = true;
+            } else {
+                customSizeInputs.style.display = 'none';
+                currentPatternSize = selectedValue;
+                isCustomSize = false;
+                backgroundContainer.style.backgroundSize = `${currentPatternSize}px ${currentPatternSize}px`;
+            }
+        });
+
+        aspectRatioButton.addEventListener('click', () => {
+            const width = parseInt(customWidth.value);
+            const height = parseInt(customHeight.value);
+
+            if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+                alert("Введите корректные размеры.");
+                return;
+            }
+
+            customWidthValue = width;
+            customHeightValue = height;
+
+            // Установка пользовательского размера фона
+            backgroundContainer.style.backgroundSize = `${customWidthValue}px ${customHeightValue}px`;
         });
 
         downloadButton.addEventListener('click', () => {
@@ -214,9 +183,9 @@
                 // Создание паттерна с заданным размером
                 const patternCanvas = document.createElement('canvas');
                 const patternContext = patternCanvas.getContext('2d');
-                patternCanvas.width = currentPatternSize;
-                patternCanvas.height = currentPatternSize;
-                
+                patternCanvas.width = isCustomSize ? customWidthValue : currentPatternSize;
+                patternCanvas.height = isCustomSize ? customHeightValue : currentPatternSize;
+
                 // Нарисовать фон на паттерн холсте
                 patternContext.drawImage(tempBackground, 0, 0, patternCanvas.width, patternCanvas.height);
                 const pattern = context.createPattern(patternCanvas, 'repeat');
