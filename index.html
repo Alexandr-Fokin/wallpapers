@@ -123,6 +123,7 @@
             transform: translateY(0);
         }
 
+
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -307,7 +308,6 @@
         let uploadedBackgroundUrl = null;
         let isBackgroundImageUploaded = false;
         let currentPatternSize = 200; // Начальный размер
-        let isCustomSize = false;
         let customWidthValue = 200;
         let customHeightValue = 200;
         let aspectRatio = 1;
@@ -339,11 +339,10 @@
 
             if (selectedValue === 'custom') {
                 customSizeInputs.style.display = 'block';
-                isCustomSize = true;
+                updateCustomSizeInputs();
             } else {
                 customSizeInputs.style.display = 'none';
                 currentPatternSize = selectedValue;
-                isCustomSize = false;
                 backgroundContainer.style.backgroundSize = `${currentPatternSize}px ${currentPatternSize}px`;
             }
         });
@@ -358,22 +357,25 @@
             }
 
             if (keepAspectRatio.checked) {
-                if (customWidthValue === width) {
-                    customHeightValue = Math.round(width / aspectRatio);
-                } else if (customHeightValue === height) {
-                    customWidthValue = Math.round(height * aspectRatio);
-                } else {
-                    aspectRatio = width / height;
-                    customWidthValue = width;
-                    customHeightValue = height;
-                }
+                aspectRatio = width / height;
+                customWidthValue = width;
+                customHeightValue = height;
             } else {
                 customWidthValue = width;
                 customHeightValue = height;
             }
+
             backgroundContainer.style.backgroundSize = `${customWidthValue}px ${customHeightValue}px`;
         });
 
+        function updateCustomSizeInputs() {
+            if (keepAspectRatio.checked) {
+                customHeight.value = Math.round(customWidth.value / aspectRatio);
+            } else {
+                customWidth.value = customWidthValue;
+                customHeight.value = customHeightValue;
+            }
+        }
         customWidth.addEventListener('input', () => {
             if (keepAspectRatio.checked) {
                 customHeight.value = Math.round(customWidth.value / aspectRatio);
@@ -407,8 +409,8 @@
                 // Создание паттерна с заданным размером
                 const patternCanvas = document.createElement('canvas');
                 const patternContext = patternCanvas.getContext('2d');
-                patternCanvas.width = isCustomSize ? customWidthValue : currentPatternSize;
-                patternCanvas.height = isCustomSize ? customHeightValue : currentPatternSize;
+                patternCanvas.width = patternSizeSelect.value === 'custom' ? customWidthValue : currentPatternSize;
+                patternCanvas.height = patternSizeSelect.value === 'custom' ? customHeightValue : currentPatternSize;
 
                 // Нарисовать фон на паттерн холсте
                 patternContext.drawImage(tempBackground, 0, 0, patternCanvas.width, patternCanvas.height);
