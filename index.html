@@ -272,6 +272,7 @@
                 <option value="b-18.png">Интерьер 16</option>
                 <option value="b-16.png">Пол 1</option>
                 <option value="b-17.png">Пол 2</option>
+                <option value="b-19.png">Раковина (плитка)</option>
                 <!-- <option value="b-18.png">Пол 3</option> -->
             </select>
         </label>
@@ -283,7 +284,7 @@
                 <option value="300">300px</option>
                 <option value="400">400px</option>
                 <option value="600">600px</option>
-                <option value="custom">Пользовательский NEW</option>
+                <option value="custom">Пользовательский</option>
             </select>
         </label>
         <div id="customSizeInputs" style="display: none;">
@@ -297,195 +298,175 @@
             </label>
             <label>
                 <input type="checkbox" id="keepAspectRatio">
-                Сохранить пропорции (пока не работает)
+                Сохранить пропорции
             </label>
             <button id="aspectRatioButton">Применить</button>
         </div>
         <button id="downloadButton">Скачать изображение</button>
     </div>
 
-    <div class=""
-        style="margin: 0 auto; text-align: center; margin-top: 15px; margin-bottom: 15px; font-size: 12px; font-weight: 400;">
-        Все права на эту разработку принадлежат Фокину Александру Сергеевичу. Данное программное обеспечение (или
-        веб-сайт, приложение и т.д.) является объектом авторского права и других прав интеллектуальной собственности.
+    <script>
+        const uploadButton = document.getElementById('uploadButton');
+        const backgroundContainer = document.getElementById('backgroundContainer');
+        const interiorSelect = document.getElementById('interiorSelect');
+        const mainImage = document.getElementById('mainImage');
+        const downloadButton = document.getElementById('downloadButton');
+        const patternSizeSelect = document.getElementById('patternSizeSelect');
+        const customSizeInputs = document.getElementById('customSizeInputs');
+        const customWidth = document.getElementById('customWidth');
+        const customHeight = document.getElementById('customHeight');
+        const aspectRatioButton = document.getElementById('aspectRatioButton');
+        const keepAspectRatio = document.getElementById('keepAspectRatio');
 
-        Запрещается:
+        let uploadedBackgroundUrl = null;
+        let isBackgroundImageUploaded = false;
+        let currentPatternSize = 200; // Начальный размер
+        let customWidthValue = 200;
+        let customHeightValue = 200;
+        let aspectRatio = 1;
 
-        Использование данного программного обеспечения (или его частей) в коммерческих целях без предварительного
-        письменного согласия правообладателя.
-        Копирование, распространение, изменение или создание производных продуктов на основе данного программного
-        обеспечения без разрешения.
-        Любое другое использование, нарушающее авторские права и права на интеллектуальную собственность.
+        uploadButton.addEventListener('change', (event) => {
+            const file = event.target.files[0];
 
-        Все товарные знаки, логотипы и фирменные наименования являются собственностью их владельцев. Использование
-        данных знаков без соответствующего разрешения также запрещено.
-        Контактная информация
+            if (file) {
+                const reader = new FileReader();
 
-        Для получения разрешений на использование или по вопросам, связанным с правами собственности, пожалуйста,
-        свяжитесь с нами по адресу: fokin.alek@mail.ru</div>
+                reader.onload = (e) => {
+                    const imageUrl = e.target.result;
+                    uploadedBackgroundUrl = imageUrl;
+                    isBackgroundImageUploaded = true;
+                    backgroundContainer.style.backgroundImage = `url(${imageUrl})`;
+                };
 
-        <script>
-            const uploadButton = document.getElementById('uploadButton');
-            const backgroundContainer = document.getElementById('backgroundContainer');
-            const interiorSelect = document.getElementById('interiorSelect');
-            const mainImage = document.getElementById('mainImage');
-            const downloadButton = document.getElementById('downloadButton');
-            const patternSizeSelect = document.getElementById('patternSizeSelect');
-            const customSizeInputs = document.getElementById('customSizeInputs');
-            const customWidth = document.getElementById('customWidth');
-            const customHeight = document.getElementById('customHeight');
-            const aspectRatioButton = document.getElementById('aspectRatioButton');
-            const keepAspectRatio = document.getElementById('keepAspectRatio');
-        
-            let uploadedBackgroundUrl = null;
-            let isBackgroundImageUploaded = false;
-            let currentPatternSize = 200; // Начальный размер
-            let customWidthValue = 200;
-            let customHeightValue = 200;
-            let aspectRatio = 1;
-        
-            uploadButton.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-        
-                if (file) {
-                    const reader = new FileReader();
-        
-                    reader.onload = (e) => {
-                        const imageUrl = e.target.result;
-                        uploadedBackgroundUrl = imageUrl;
-                        isBackgroundImageUploaded = true;
-                        backgroundContainer.style.backgroundImage = `url(${imageUrl})`;
-                    };
-        
-                    reader.readAsDataURL(file);
-                }
-            });
-        
-            interiorSelect.addEventListener('change', (event) => {
-                const imageUrl = event.target.value;
-                mainImage.src = imageUrl;
-            });
-        
-            patternSizeSelect.addEventListener('change', (event) => {
-                const selectedValue = event.target.value;
-        
-                if (selectedValue === 'custom') {
-                    customSizeInputs.style.display = 'block';
-                    updateCustomSizeInputs();
-                } else {
-                    customSizeInputs.style.display = 'none';
-                    currentPatternSize = selectedValue;
-                    backgroundContainer.style.backgroundSize = `${currentPatternSize}px ${currentPatternSize}px`;
-                }
-            });
-        
-            aspectRatioButton.addEventListener('click', () => {
+                reader.readAsDataURL(file);
+            }
+        });
+
+        interiorSelect.addEventListener('change', (event) => {
+            const imageUrl = event.target.value;
+            mainImage.src = imageUrl;
+        });
+
+        patternSizeSelect.addEventListener('change', (event) => {
+            const selectedValue = event.target.value;
+
+            if (selectedValue === 'custom') {
+                customSizeInputs.style.display = 'block';
+                updateCustomSizeInputs();
+            } else {
+                customSizeInputs.style.display = 'none';
+                currentPatternSize = selectedValue;
+                backgroundContainer.style.backgroundSize = `${currentPatternSize}px ${currentPatternSize}px`;
+            }
+        });
+
+        aspectRatioButton.addEventListener('click', () => {
+            const width = parseInt(customWidth.value);
+            const height = parseInt(customHeight.value);
+
+            if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+                alert("Введите корректные размеры.");
+                return;
+            }
+
+            if (keepAspectRatio.checked) {
+                aspectRatio = width / height;
+                customWidthValue = width;
+                customHeightValue = height;
+            } else {
+                customWidthValue = width;
+                customHeightValue = height;
+            }
+
+            backgroundContainer.style.backgroundSize = `${customWidthValue}px ${customHeightValue}px`;
+        });
+
+        keepAspectRatio.addEventListener('change', () => {
+            if (keepAspectRatio.checked) {
                 const width = parseInt(customWidth.value);
                 const height = parseInt(customHeight.value);
-        
-                if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
-                    alert("Введите корректные размеры.");
-                    return;
-                }
-        
-                if (keepAspectRatio.checked) {
+
+                if (!isNaN(width) && !isNaN(height) && width > 0 && height > 0) {
                     aspectRatio = width / height;
-                    customWidthValue = width;
-                    customHeightValue = height;
-                } else {
-                    customWidthValue = width;
-                    customHeightValue = height;
-                }
-        
-                backgroundContainer.style.backgroundSize = `${customWidthValue}px ${customHeightValue}px`;
-            });
-        
-            keepAspectRatio.addEventListener('change', () => {
-                if (keepAspectRatio.checked) {
-                    const width = parseInt(customWidth.value);
-                    const height = parseInt(customHeight.value);
-        
-                    if (!isNaN(width) && !isNaN(height) && width > 0 && height > 0) {
-                        aspectRatio = width / height;
-                    }
-                }
-            });
-        
-            customWidth.addEventListener('input', () => {
-                if (keepAspectRatio.checked) {
-                    customHeight.value = Math.round(customWidth.value / aspectRatio);
-                }
-            });
-        
-            customHeight.addEventListener('input', () => {
-                if (keepAspectRatio.checked) {
-                    customWidth.value = Math.round(customHeight.value * aspectRatio);
-                }
-            });
-        
-            function updateCustomSizeInputs() {
-                if (keepAspectRatio.checked) {
-                    customHeight.value = Math.round(customWidth.value / aspectRatio);
-                } else {
-                    customWidth.value = customWidthValue;
-                    customHeight.value = customHeightValue;
                 }
             }
-        
-            downloadButton.addEventListener('click', () => {
-                if (!isBackgroundImageUploaded) {
-                    alert("Пожалуйста, загрузите фоновое изображение.");
-                    return;
-                }
-        
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-        
-                canvas.width = mainImage.naturalWidth;
-                canvas.height = mainImage.naturalHeight;
-        
-                const tempBackground = new Image();
-                tempBackground.src = uploadedBackgroundUrl;
-        
-                tempBackground.onload = () => {
-                    context.clearRect(0, 0, canvas.width, canvas.height);
-        
-                    // Создание паттерна с заданным размером
-                    const patternCanvas = document.createElement('canvas');
-                    const patternContext = patternCanvas.getContext('2d');
-                    patternCanvas.width = patternSizeSelect.value === 'custom' ? customWidthValue : currentPatternSize;
-                    patternCanvas.height = patternSizeSelect.value === 'custom' ? customHeightValue : currentPatternSize;
-        
-                    // Нарисовать фон на паттерн холсте
-                    patternContext.drawImage(tempBackground, 0, 0, patternCanvas.width, patternCanvas.height);
-                    const pattern = context.createPattern(patternCanvas, 'repeat');
-        
-                    context.fillStyle = pattern;
-                    context.fillRect(0, 0, canvas.width, canvas.height);
-        
-                    const tempImage = new Image();
-                    tempImage.src = mainImage.src;
-        
-                    tempImage.onload = () => {
-                        context.drawImage(tempImage, 0, 0, canvas.width, canvas.height);
-        
-                        canvas.toBlob((blob) => {
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = 'interior-design.jpg';
-                            document.body.appendChild(link); // Добавляем ссылку в DOM
-                            link.click();
-                            document.body.removeChild(link); // Удаляем ссылку из DOM
-                        }, 'image/jpeg');
-                    };
-        
-                    tempImage.onerror = () => {
-                        alert("Ошибка загрузки изображения интерьера.");
-                    };
+        });
+
+        customWidth.addEventListener('input', () => {
+            if (keepAspectRatio.checked) {
+                customHeight.value = Math.round(customWidth.value / aspectRatio);
+            }
+        });
+
+        customHeight.addEventListener('input', () => {
+            if (keepAspectRatio.checked) {
+                customWidth.value = Math.round(customHeight.value * aspectRatio);
+            }
+        });
+
+        function updateCustomSizeInputs() {
+            if (keepAspectRatio.checked) {
+                customHeight.value = Math.round(customWidth.value / aspectRatio);
+            } else {
+                customWidth.value = customWidthValue;
+                customHeight.value = customHeightValue;
+            }
+        }
+
+        downloadButton.addEventListener('click', () => {
+            if (!isBackgroundImageUploaded) {
+                alert("Пожалуйста, загрузите фоновое изображение.");
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            canvas.width = mainImage.naturalWidth;
+            canvas.height = mainImage.naturalHeight;
+
+            const tempBackground = new Image();
+            tempBackground.src = uploadedBackgroundUrl;
+
+            tempBackground.onload = () => {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Создание паттерна с заданным размером
+                const patternCanvas = document.createElement('canvas');
+                const patternContext = patternCanvas.getContext('2d');
+                patternCanvas.width = patternSizeSelect.value === 'custom' ? customWidthValue : currentPatternSize;
+                patternCanvas.height = patternSizeSelect.value === 'custom' ? customHeightValue : currentPatternSize;
+
+                // Нарисовать фон на паттерн холсте
+                patternContext.drawImage(tempBackground, 0, 0, patternCanvas.width, patternCanvas.height);
+                const pattern = context.createPattern(patternCanvas, 'repeat');
+
+                context.fillStyle = pattern;
+                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                const tempImage = new Image();
+                tempImage.src = mainImage.src;
+
+                tempImage.onload = () => {
+                    context.drawImage(tempImage, 0, 0, canvas.width, canvas.height);
+
+                    canvas.toBlob((blob) => {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'interior-design.jpg';
+                        document.body.appendChild(link); // Добавляем ссылку в DOM
+                        link.click();
+                        document.body.removeChild(link); // Удаляем ссылку из DOM
+                    }, 'image/jpeg');
                 };
-        
-                tempBackground.onerror = () => {
-                    alert("Ошибка загрузки фонового изображения.");
+
+                tempImage.onerror = () => {
+                    alert("Ошибка загрузки изображения интерьера.");
                 };
-            });
-        </script>
+            };
+
+            tempBackground.onerror = () => {
+                alert("Ошибка загрузки фонового изображения.");
+            };
+        });
+    </script>
